@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <meta charset="UTF-8">
+    <title>Exam Result - {{ course.name }}</title>
+</head>
+<body>
+    <nav class="navbar navbar-light bg-light">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="{% url 'onlinecourse:index' %}">Online Course</a>
+            </div>
+            <ul class="nav navbar-nav navbar-right">
+                {% if user.is_authenticated %}
+                <li>
+                    <a class="btn btn-link" href="#">{{ user.first_name }}({{ user.username }})</a>
+                    <a class="btn btn-link" href="{% url 'onlinecourse:logout' %}">Logout</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h2>Exam Results for {{ course.name }}</h2>
+
+        {% if is_passed %}
+        <div class="alert alert-success" role="alert">
+            <h4 class="alert-heading">Congratulations, {{ user.first_name }}!</h4>
+            <p>You have passed the exam with score <strong>{{ grade }} / {{ total_possible }}</strong> ({{ grade }}%).</p>
+        </div>
+        {% else %}
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">Failed</h4>
+            <p>Sorry, {{ user.first_name }}! You failed the exam with score <strong>{{ grade }} / {{ total_possible }}</strong>.</p>
+        </div>
+        {% endif %}
+
+        <h4 class="mt-4">Exam Breakdown:</h4>
+        {% for question in course.question_set.all %}
+        <div class="card mb-3">
+            <div class="card-header">
+                <strong>Question {{ forloop.counter }}:</strong> {{ question.question_text }}
+                <span class="badge badge-secondary float-right">{{ question.grade }} Points</span>
+            </div>
+            <div class="card-body">
+                {% for choice in question.choice_set.all %}
+                <div class="p-2 mb-1 {% if choice.is_correct %}bg-success text-white rounded{% endif %}">
+                    {% if choice.is_correct %}&#10004;{% else %}&#9675;{% endif %}
+                    {{ choice.choice_text }}
+                    {% if choice.is_correct %}
+                    <span class="badge badge-light text-success float-right">Correct Answer</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="text-center mt-4 mb-5">
+            <a href="{% url 'onlinecourse:course_details' course.id %}" class="btn btn-primary">Back to Course</a>
+        </div>
+    </div>
+</body>
+</html>
